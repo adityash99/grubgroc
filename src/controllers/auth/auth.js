@@ -27,9 +27,9 @@ export const loginCustomer = async (req, reply) => {
         phone,
         role: "Customer",
         isActivated: true,
-        latitude:13.3524,
-        longitude:74.7868,
-        address: "heybaby"
+         latitude:13.3524,
+         longitude:74.7868,
+         address: "defaultAdress"
       });
 
       await customer.save();
@@ -47,34 +47,6 @@ export const loginCustomer = async (req, reply) => {
     return reply.status(500).send({ message: "An error occurred", error });
   }
 };
-
-////
-// In auth.js (or customer.js if you decide to create a separate file)
-/*
-export const updateCustomerAddress = async (req, reply) => {
-  try {
-    const { phone, newAddress } = req.body; // Get phone and new address from the request body
-
-    // Find the customer by phone number
-    const customer = await Customer.findOne({ phone });
-
-    if (!customer) {
-      return reply.status(404).send({ success: false, message: 'Customer not found' });
-    }
-
-    // Update the address
-    customer.address = newAddress;
-    await customer.save();
-
-    // Send success response
-    reply.send({ success: true, message: 'Address updated successfully' });
-  } catch (error) {
-    console.error('Error updating address:', error);
-    reply.status(500).send({ success: false, message: 'Failed to update address' });
-  }
-}; 
-*/
-
 export const updateCustomerAddress = async (req, reply) => {
   try {
     const { phone, newAddress } = req.body; // Get phone and new address from the request body
@@ -105,15 +77,6 @@ export const updateCustomerAddress = async (req, reply) => {
   }
 };
 
-
-
-
-
-
-
-
-
-
 // Assuming you're using Fastify or Express.js
 export const updateOrderFields = async (req, reply) => {
   try {
@@ -138,6 +101,10 @@ export const updateOrderFields = async (req, reply) => {
     console.error('Error updating order fields:', error);
     reply.status(500).send({ success: false, message: 'Failed to update order fields' });
   }
+
+
+
+
 };
 
 
@@ -236,6 +203,40 @@ export const fetchUser = async (req, reply) => {
   } catch (error) {
     return reply.status(500).send({ message: "An error occurred", error });
   }
+
+
+
+
+
 };
 
+export const deleteUser = async (req, reply) => {
+  try {
+    const { phone, role } = req.body; // Extract phone and role from request body
 
+    let user;
+
+    // Find the user based on role and identifier (phone for customer, email for delivery partner)
+    if (role === 'Customer') {
+      user = await Customer.findOne({ phone });
+    } else if (role === 'DeliveryPartner') {
+      user = await DeliveryPartner.findOne({ email: phone }); // Assuming "phone" means "email" for delivery partners in your example
+    } else {
+      return reply.status(400).send({ message: 'Invalid role provided' });
+    }
+
+    if (!user) {
+      return reply.status(404).send({ message: `${role} not found` });
+    }
+
+    // Delete the user
+    await user.remove();
+
+    return reply.send({
+      success: true,
+      message: `${role} deleted successfully`,
+    });
+  } catch (error) {
+    console.error('Error deleting user:', error);
+  }
+};
